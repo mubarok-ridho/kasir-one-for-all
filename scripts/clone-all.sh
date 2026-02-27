@@ -1,23 +1,42 @@
 #!/bin/bash
 
-echo "Cloning all kasir microservices..."
+echo "========================================="
+echo "  Deploying Casheer Microservices"
+echo "========================================="
+echo ""
 
-REPOS=(
-    "kasir-auth-service"
-    "kasir-menu-service" 
-    "kasir-report-service"
-)
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m'
 
-BASE_URL="https://github.com/yourorg"
+# Cek Docker
+if ! command -v docker &> /dev/null; then
+    echo "❌ Docker is not installed"
+    exit 1
+fi
 
-for REPO in "${REPOS[@]}"; do
-    if [ ! -d "$REPO" ]; then
-        echo "Cloning $REPO..."
-        git clone "$BASE_URL/$REPO.git"
+# Build semua service
+SERVICES=("casheer-auth-service" "casheer-menu-service" "casheer-report-service")
+
+for SERVICE in "${SERVICES[@]}"; do
+    if [ -d "$SERVICE" ]; then
+        echo -e "${YELLOW}Building $SERVICE...${NC}"
+        cd "$SERVICE"
+        
+        # Build Docker image
+        docker build -t "mubarok-ridho/$SERVICE:latest" .
+        
+        if [ $? -eq 0 ]; then
+            echo -e "${GREEN}✅ Built $SERVICE successfully${NC}"
+        else
+            echo -e "❌ Failed to build $SERVICE"
+        fi
+        
+        cd ..
     else
-        echo "$REPO already exists, pulling latest..."
-        cd "$REPO" && git pull && cd ..
+        echo -e "❌ $SERVICE directory not found"
     fi
 done
 
-echo "✅ All repositories cloned!"
+echo ""
+echo -e "${GREEN}✅ All services built successfully!${NC}"
