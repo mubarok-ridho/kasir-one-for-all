@@ -1,29 +1,34 @@
-# Main Tiltfile that runs all services
+# Kasir Microservices - Tiltfile (Docker Compose mode)
 print("🚀 Starting Kasir Microservices...")
 
-# Database
+# Load semua service dari docker-compose
 docker_compose('docker-compose.yml')
 
-# Clone repositories if not exists
-local('scripts/clone-all.sh')
-
-# Services
-load('ext://git_resource', 'git_checkout')
-
-# Auth Service
-git_checkout('https://github.com/yourorg/kasir-auth-service.git', 'main')
-docker_build('kasir-auth-service', 'kasir-auth-service')
-k8s_yaml('kasir-auth-service/k8s/deployment.yaml')
-k8s_resource('kasir-auth-service', port_forwards=3001)
+# Auth Service - live update saat ada perubahan Go files
+dc_resource('auth-service',
+  labels=["services"],
+  trigger_mode=TRIGGER_MODE_AUTO
+)
 
 # Menu Service
-git_checkout('https://github.com/yourorg/kasir-menu-service.git', 'main')
-docker_build('kasir-menu-service', 'kasir-menu-service')
-k8s_yaml('kasir-menu-service/k8s/deployment.yaml')
-k8s_resource('kasir-menu-service', port_forwards=3002)
+dc_resource('menu-service',
+  labels=["services"],
+  trigger_mode=TRIGGER_MODE_AUTO
+)
 
 # Report Service
-git_checkout('https://github.com/yourorg/kasir-report-service.git', 'main')
-docker_build('kasir-report-service', 'kasir-report-service')
-k8s_yaml('kasir-report-service/k8s/deployment.yaml')
-k8s_resource('kasir-report-service', port_forwards=3003)
+dc_resource('report-service',
+  labels=["services"],
+  trigger_mode=TRIGGER_MODE_AUTO
+)
+
+# Database
+dc_resource('postgres',
+  labels=["infra"]
+)
+
+# RabbitMQ
+dc_resource('rabbitmq',
+  labels=["infra"],
+  links=["http://localhost:15672"] # Management UI
+)

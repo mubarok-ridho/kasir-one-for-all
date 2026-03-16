@@ -1,0 +1,11 @@
+/casheer-frontend
+/casheer-report-service
+/casheer-menu-service
+/casheer-auth-service
+/node_modules
+/.env
+/.env.local
+/.env.development
+/.env.production
+/.env.test
+/.next
